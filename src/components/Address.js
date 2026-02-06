@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
   TextField,
@@ -28,17 +28,19 @@ const Address = () => {
   });
 
   // ================= FETCH ADDRESSES =================
-  const fetchAddresses = async () => {
+  const fetchAddresses = useCallback(async () => {
     const res = await axios.get(
       `${process.env.REACT_APP_API_BASE_URL}/address`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
     setAddresses(res.data);
-  };
+  }, [token]);
 
   useEffect(() => {
-    if (role !== "admin") fetchAddresses();
-  }, []);
+    if (role !== "admin") {
+      fetchAddresses();
+    }
+  }, [role, fetchAddresses]);
 
   // ================= ADD / UPDATE =================
   const handleSubmit = async () => {
@@ -47,14 +49,14 @@ const Address = () => {
         await axios.put(
           `${process.env.REACT_APP_API_BASE_URL}/address/${editId}`,
           form,
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
         Swal.fire("Updated", "Address updated successfully", "success");
       } else {
         await axios.post(
           `${process.env.REACT_APP_API_BASE_URL}/address`,
           form,
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
         Swal.fire("Success", "Address added", "success");
       }
@@ -101,7 +103,7 @@ const Address = () => {
       if (res.isConfirmed) {
         await axios.delete(
           `${process.env.REACT_APP_API_BASE_URL}/address/${id}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } },
         );
         Swal.fire("Deleted", "Address removed", "success");
         fetchAddresses();
