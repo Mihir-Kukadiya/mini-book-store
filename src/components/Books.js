@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Button,
@@ -45,7 +45,7 @@ const Books = () => {
   });
 
   const [cart, setCart] = useState(
-    JSON.parse(localStorage.getItem("cart")) || []
+    JSON.parse(localStorage.getItem("cart")) || [],
   );
 
   const isInCart = (bookId) => {
@@ -93,27 +93,27 @@ const Books = () => {
   };
 
   // ================= FETCH BOOKS =================
-  const fetchBooks = async () => {
+  const fetchBooks = useCallback(async () => {
     try {
       const res = await axios.get(
         `${process.env.REACT_APP_API_BASE_URL}/books`,
         {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
+        },
       );
       setBooks(res.data);
     } catch (error) {
       Swal.fire(
         "Error",
         error.response?.data?.message || "Unable to load books",
-        "error"
+        "error",
       );
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchBooks();
-  }, []);
+  }, [fetchBooks]);
 
   // ================= SEARCH =================
   const [search, setSearch] = useState("");
@@ -121,7 +121,7 @@ const Books = () => {
   const filteredBooks = books.filter((book) =>
     `${book.title} ${book.author} ${book.category}`
       .toLowerCase()
-      .includes(search.toLowerCase())
+      .includes(search.toLowerCase()),
   );
 
   // ================= CATEGORY =================
@@ -161,7 +161,6 @@ const Books = () => {
     setOpen(true);
   };
 
-
   const closeDialog = () => setOpen(false);
 
   const handleChange = (e) => {
@@ -175,7 +174,11 @@ const Books = () => {
   // ================= SAVE BOOK =================
   const saveBook = async () => {
     if (!formData.title || !formData.author || !formData.price) {
-      return Swal.fire("Error", "Title, author, and price are required", "error");
+      return Swal.fire(
+        "Error",
+        "Title, author, and price are required",
+        "error",
+      );
     }
 
     try {
@@ -184,12 +187,12 @@ const Books = () => {
       data.append("author", formData.author);
       data.append("price", formData.price);
       data.append("category", formData.category || "");
-      
+
       // Check if image is selected
       if (formData.image && formData.image instanceof File) {
         console.log("📤 Appending image to FormData:", formData.image.name);
         data.append("image", formData.image);
-        
+
         // Log FormData contents for debugging
         for (let pair of data.entries()) {
           console.log("FormData:", pair[0], pair[1]);
@@ -208,14 +211,18 @@ const Books = () => {
         await axios.put(
           `${process.env.REACT_APP_API_BASE_URL}/books/${editId}`,
           data,
-          { headers }
+          { headers },
         );
         Swal.fire("Updated", "Book updated", "success");
       } else {
         console.log("➕ Creating new book");
-        const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/books`, data, {
-          headers,
-        });
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_BASE_URL}/books`,
+          data,
+          {
+            headers,
+          },
+        );
         console.log("✅ Book created:", response.data);
         Swal.fire("Added", "Book added", "success");
       }
@@ -227,8 +234,10 @@ const Books = () => {
       console.error("Error response:", error.response?.data);
       Swal.fire(
         "Error",
-        error.response?.data?.message || error.response?.data?.error || "Action failed",
-        "error"
+        error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Action failed",
+        "error",
       );
     }
   };
@@ -248,7 +257,7 @@ const Books = () => {
           `${process.env.REACT_APP_API_BASE_URL}/books/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
         Swal.fire("Deleted", "Book removed", "success");
         fetchBooks();
@@ -577,7 +586,12 @@ const Books = () => {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      console.log("📷 File selected:", file.name, file.size, file.type);
+                      console.log(
+                        "📷 File selected:",
+                        file.name,
+                        file.size,
+                        file.type,
+                      );
                       setFormData({ ...formData, image: file });
                     } else {
                       setFormData({ ...formData, image: null });
@@ -587,10 +601,18 @@ const Books = () => {
               </Button>
               {formData.image && (
                 <Box sx={{ mt: 1, p: 1, bgcolor: "#f5f5f5", borderRadius: 1 }}>
-                  <Typography variant="caption" color="success.main" display="block">
+                  <Typography
+                    variant="caption"
+                    color="success.main"
+                    display="block"
+                  >
                     ✓ Selected: {formData.image.name}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" display="block">
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    display="block"
+                  >
                     Size: {(formData.image.size / 1024).toFixed(2)} KB
                   </Typography>
                 </Box>

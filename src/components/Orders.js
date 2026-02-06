@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -16,7 +16,7 @@ const Orders = () => {
   const token = localStorage.getItem("token");
   const [orders, setOrders] = useState([]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const res = await axios.get(
         `${process.env.REACT_APP_API_BASE_URL}/orders`,
@@ -24,18 +24,18 @@ const Orders = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       setOrders(res.data);
     } catch (error) {
       console.error("Admin orders error:", error);
       Swal.fire("Error", "Failed to load orders", "error");
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     if (token) fetchOrders();
-  }, [token]);
+  }, [token, fetchOrders]);
 
   // ================= UPDATE ORDER STATUS =================
   const updateStatus = async (id, status) => {
@@ -47,7 +47,7 @@ const Orders = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
 
       Swal.fire("Success", `Order ${status}`, "success");
@@ -86,8 +86,8 @@ const Orders = () => {
                   o.status === "Confirmed"
                     ? "success"
                     : o.status === "Cancelled"
-                    ? "error"
-                    : "warning"
+                      ? "error"
+                      : "warning"
                 }
               />
 

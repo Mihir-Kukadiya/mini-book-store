@@ -16,7 +16,7 @@ const Auth = () => {
   const navigate = useNavigate();
 
   const [mode, setMode] = useState("login");
-  const [role, setRole] = useState("user");
+  const [role] = useState("user");
 
   const [formData, setFormData] = useState({
     firstName: "",

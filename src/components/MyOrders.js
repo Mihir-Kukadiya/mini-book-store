@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Paper,
@@ -39,13 +39,16 @@ const MyOrders = () => {
   }, [navigate, token, role]);
 
   // ================= FETCH USER ORDERS =================
-  const fetchMyOrders = async () => {
+  const fetchMyOrders = useCallback(async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/orders/my-orders`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/orders/my-orders`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       setOrders(res.data);
     } catch (error) {
       console.error("My orders error:", error);
@@ -53,11 +56,11 @@ const MyOrders = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchMyOrders();
-  }, []);
+  }, [fetchMyOrders]);
 
   return (
     <>
@@ -131,8 +134,8 @@ const MyOrders = () => {
                             order.status === "Confirmed"
                               ? "success"
                               : order.status === "Cancelled"
-                              ? "error"
-                              : "warning"
+                                ? "error"
+                                : "warning"
                           }
                         />
                       </TableCell>
